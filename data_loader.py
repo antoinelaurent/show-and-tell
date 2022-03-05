@@ -31,7 +31,7 @@ class TsvDataset(data.Dataset):
         return: (image, caption)
         """
 
-        line = lines[index]
+        line = self.lines[index]
         fields = line.split('\t')
         txt = fields[self.field_num].lower()
 
