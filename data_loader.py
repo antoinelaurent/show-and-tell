@@ -5,6 +5,7 @@ from vocab import Vocabulary
 import codecs
 from sentence_transformers import models, SentenceTransformer
 
+import ipdb
 
 
 class TsvDataset(data.Dataset):
@@ -32,11 +33,15 @@ class TsvDataset(data.Dataset):
         return: (image, caption)
         """
 
+        ipdb.set_trace()
+
         line = self.lines[index]
         fields = line.split('\t')
+        print(fields)
+        
         txt = fields[self.field_num].lower()
         vocab = self.vocab
-        
+
         # tokenize captions
         caption = torch.Tensor([vocab(vocab.start_token())] +
                                [vocab(char) for char in txt] +
