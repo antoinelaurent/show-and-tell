@@ -10,7 +10,7 @@ from sentence_transformers import models, SentenceTransformer
 class TsvDataset(data.Dataset):
     """TSV custom dataset class, compatible with Dataloader"""
 
-    def __init__(self, file_name, field_num=2):
+    def __init__(self, file_name, vocab, field_num=2):
         """
 
         :param file_name=path to the tsv file
@@ -20,6 +20,7 @@ class TsvDataset(data.Dataset):
         self.field_num = field_num
         self.lines = f.readlines()
         self.sentence_labse = SentenceTransformer('/gpfsstore/rech/eie/upp27cx/labse', device='cuda')
+        self.vocab = vocab
 
 
     def __getitem__(self,index):
@@ -34,7 +35,8 @@ class TsvDataset(data.Dataset):
         line = self.lines[index]
         fields = line.split('\t')
         txt = fields[self.field_num].lower()
-
+        vocab = self.vocab
+        
         # tokenize captions
         caption = torch.Tensor([vocab(vocab.start_token())] +
                                [vocab(char) for char in txt] +
@@ -95,7 +97,7 @@ def get_basic_loader(file_name, field_num, vocab, batch_size=32, shuffle=True, n
     :param num_workers:
     :returns:
     """
-    datas = TsvDataset(file_name, field_num)
+    datas = TsvDataset(file_name, field_num, vocab)
 
     # Data loader for COCO dataset
     # This will return (images, captions, lengths) for every iteration.
