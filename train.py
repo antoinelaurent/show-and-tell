@@ -6,7 +6,7 @@ from torch.autograd import Variable
 from torch.nn.utils.rnn import pack_padded_sequence
 import torch.optim as optim
 import torch.nn as nn
-from torch import np
+import numpy as np
 import utils
 from data_loader import get_basic_loader
 from models import CNN, RNN
