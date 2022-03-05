@@ -13,6 +13,9 @@ from models import CNN, RNN
 from vocab import Vocabulary, load_vocab
 import os
 
+import ipdb
+
+
 def main(args):
     # hyperparameters
     batch_size = args.batch_size
@@ -45,6 +48,8 @@ def main(args):
     losses_val = []
     losses_train = []
 
+    ipdb.set_trace()
+    
     # Build the models
     ngpu = 1
     initial_step = initial_epoch = 0
@@ -56,51 +61,54 @@ def main(args):
     save_step = 500
     checkpoint_dir = args.checkpoint_dir
 
-    encoder = CNN(embed_size)
+    #don't need encoder
+    #encoder = CNN(embed_size)
+    
     decoder = RNN(embed_size, num_hiddens, len(vocab), 1, rec_unit=args.rec_unit)
 
     # Loss
     criterion = nn.CrossEntropyLoss()
 
     if args.checkpoint_file:
-        encoder_state_dict, decoder_state_dict, optimizer, *meta = utils.load_models(args.checkpoint_file,args.sample)
+        decoder_state_dict, optimizer, *meta = utils.load_models(args.checkpoint_file,args.sample)
         initial_step, initial_epoch, losses_train, losses_val = meta
-        encoder.load_state_dict(encoder_state_dict)
+        #encoder.load_state_dict(encoder_state_dict)
         decoder.load_state_dict(decoder_state_dict)
     else:
-        params = list(decoder.parameters()) + list(encoder.linear.parameters()) + list(encoder.batchnorm.parameters())
+        #params = list(decoder.parameters()) + list(encoder.linear.parameters()) + list(encoder.batchnorm.parameters())
+        params = list(decoder.parameters())
         optimizer = torch.optim.Adam(params, lr=learning_rate)
 
     if torch.cuda.is_available():
-        encoder.cuda()
+        #encoder.cuda()
         decoder.cuda()
 
     if args.sample:
-        return utils.sample(encoder, decoder, vocab, val_loader)
+        return utils.sample(decoder, vocab, val_loader)
 
     # Train the Models
     total_step = len(train_loader)
     try:
         for epoch in range(initial_epoch, num_epochs):
 
-            for step, (images, captions, lengths) in enumerate(train_loader, start=initial_step):
+            for step, (features, captions, lengths) in enumerate(train_loader, start=initial_step):
 
                 # Set mini-batch dataset
-                images = utils.to_var(images, volatile=True)
+               # images = utils.to_var(images, volatile=True)
                 captions = utils.to_var(captions)
                 targets = pack_padded_sequence(captions, lengths, batch_first=True)[0]
                 
                 # Forward, Backward and Optimize
                 decoder.zero_grad()
-                encoder.zero_grad()
+                #encoder.zero_grad()
 
                 if ngpu > 1:
                     # run on multiple GPU
-                    features = nn.parallel.data_parallel(encoder, images, range(ngpu))
+                    #features = nn.parallel.data_parallel(encoder, images, range(ngpu))
                     outputs = nn.parallel.data_parallel(decoder, features, range(ngpu))
                 else:
                     # run on single GPU
-                    features = encoder(images)
+                    #features = encoder(images)
                     outputs = decoder(features, captions, lengths)
 
                 train_loss = criterion(outputs, targets)
@@ -113,12 +121,12 @@ def main(args):
                     encoder.batchnorm.eval()
                     # run validation set
                     batch_loss_val = []
-                    for val_step, (images, captions, lengths) in enumerate(val_loader):
-                        images = utils.to_var(images, volatile=True)
+                    for val_step, (features, captions, lengths) in enumerate(val_loader):
+                        #images = utils.to_var(images, volatile=True)
                         captions = utils.to_var(captions, volatile=True)
 
                         targets = pack_padded_sequence(captions, lengths, batch_first=True)[0]
-                        features = encoder(images)
+                        #features = encoder(images)
                         outputs = decoder(features, captions, lengths)
                         val_loss = criterion(outputs, targets)
                         batch_loss_val.append(val_loss.data[0])
@@ -136,11 +144,11 @@ def main(args):
                     print('Target:', sentence)
 
                     print('Epoch: {} - Step: {} - Train Loss: {} - Eval Loss: {}'.format(epoch, step, losses_train[-1], losses_val[-1]))
-                    encoder.batchnorm.train()
+                    #encoder.batchnorm.train()
 
                 # Save the models
                 if (step+1) % save_step == 0:
-                    utils.save_models(encoder, decoder, optimizer, step, epoch, losses_train, losses_val, checkpoint_dir)
+                    utils.save_models(decoder, optimizer, step, epoch, losses_train, losses_val, checkpoint_dir)
                     utils.dump_losses(losses_train, losses_val, os.path.join(checkpoint_dir, 'losses.pkl'))
 
     except KeyboardInterrupt:

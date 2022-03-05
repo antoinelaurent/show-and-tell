@@ -36,13 +36,12 @@ def unpickle(file):
         dict = cPickle.load(fo)
     return dict
 
-def save_models(encoder, decoder, optimizer, step, epoch, losses_train, losses_val, checkpoint_path):
+def save_models(decoder, optimizer, step, epoch, losses_train, losses_val, checkpoint_path):
     if not os.path.exists(checkpoint_path):
         os.makedirs(checkpoint_path)
     checkpoint_file = os.path.join(checkpoint_path, 'model-%d-%d.ckpt' %(epoch+1, step+1))
     print('Saving model to:', checkpoint_file)
     torch.save({
-        'encoder_state_dict': encoder.state_dict(),
         'decoder_state_dict': decoder.state_dict(),
         'optimizer': optimizer,
         'step': step,
@@ -56,14 +55,14 @@ def load_models(checkpoint_file,sample=False):
         checkpoint = torch.load(checkpoint_file,map_location=lambda storage, loc: storage)
     else:
         checkpoint = torch.load(checkpoint_file)
-    encoder_state_dict = checkpoint['encoder_state_dict']
+    #encoder_state_dict = checkpoint['encoder_state_dict']
     decoder_state_dict = checkpoint['decoder_state_dict']
     optimizer = checkpoint['optimizer']
     step = checkpoint['step']
     epoch = checkpoint['epoch']
     losses_train = checkpoint['losses_train']
     losses_val = checkpoint['losses_val']
-    return encoder_state_dict, decoder_state_dict, optimizer, step, epoch, losses_train, losses_val
+    return decoder_state_dict, optimizer, step, epoch, losses_train, losses_val
 
 def dump_losses(losses_train, losses_val, path):
     import pickle
@@ -85,14 +84,15 @@ def convert_back_to_text(idx_arr, vocab):
     sentence = ' '.join(sampled_caption)
     return sentence
 
-def sample(encoder, decoder, vocab, val_loader):
-    encoder.batchnorm.eval()
+def sample(decoder, vocab, val_loader):
+   #encoder.batchnorm.eval()
     # run validation set
-    images, captions, lengths = next(iter(val_loader))
+    
+    features, captions, lengths = next(iter(val_loader))
     captions = to_var(captions, volatile=True)
 
     targets = nn.utils.rnn.pack_padded_sequence(captions, lengths, batch_first=True)[0]
-    features = encoder(to_var(images, volatile=True))
+    #features = encoder(to_var(images, volatile=True))
 
     # predict
     sampled_ids = decoder.sample(features)
