@@ -25,7 +25,7 @@ def main(args):
     vocab = load_vocab()
 
 
-    train_loader = get_basic_loader(filename=TSV_FILEPATH,
+    train_loader = get_basic_loader(file_name=TSV_FILEPATH,
                                     field_num=2,
                                     vocab=vocab,
                                     batch_size=batch_size,
@@ -34,7 +34,7 @@ def main(args):
 
 
     TSV_FILEPATH = 'covost_v2.fr_en.dev.tsv'
-    val_loader = get_basic_loader(filename=TSV_FILEPATH,
+    val_loader = get_basic_loader(file_name=TSV_FILEPATH,
                                     field_num=2,
                                     vocab=vocab,
                                     batch_size=batch_size,
