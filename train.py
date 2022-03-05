@@ -8,7 +8,7 @@ import torch.optim as optim
 import torch.nn as nn
 from torch import np
 import utils
-from data_loader import get_coco_data_loader
+from data_loader import get_basic_loader
 from models import CNN, RNN
 from vocab import Vocabulary, load_vocab
 import os
@@ -18,36 +18,28 @@ def main(args):
     batch_size = args.batch_size
     num_workers = 1
 
-    # Image Preprocessing
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-        ])
 
     # load COCOs dataset
-    IMAGES_PATH = 'data/train2014'
-    CAPTION_FILE_PATH = 'data/annotations/captions_train2014.json'
+    TSV_FILEPATH = 'covost_v2.fr_en.train.tsv'
 
     vocab = load_vocab()
-    train_loader = get_coco_data_loader(path=IMAGES_PATH,
-                                        json=CAPTION_FILE_PATH,
-                                        vocab=vocab,
-                                        transform=transform,
-                                        batch_size=batch_size,
-                                        shuffle=True,
-                                        num_workers=num_workers)
 
-    IMAGES_PATH = 'data/val2014'
-    CAPTION_FILE_PATH = 'data/annotations/captions_val2014.json'
-    val_loader = get_coco_data_loader(path=IMAGES_PATH,
-                                      json=CAPTION_FILE_PATH,
-                                      vocab=vocab,
-                                      transform=transform,
-                                      batch_size=batch_size,
-                                      shuffle=True,
-                                      num_workers=num_workers)
+
+    train_loader = get_basic_loader(filename=TSV_FILEPATH,
+                                    field_num=2,
+                                    vocab=vocab,
+                                    batch_size=batch_size,
+                                    shuffle=True,
+                                    num_workers=num_workers)
+
+
+    TSV_FILEPATH = 'covost_v2.fr_en.dev.tsv'
+    val_loader = get_basic_loader(filename=TSV_FILEPATH,
+                                    field_num=2,
+                                    vocab=vocab,
+                                    batch_size=batch_size,
+                                    shuffle=True,
+                                    num_workers=num_workers)
 
 
     losses_val = []

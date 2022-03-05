@@ -1,32 +1,26 @@
 import torch
-import torchvision.transforms as transforms
 import torch.utils.data as data
-import os
-import pickle
-import numpy as np
-import nltk
 import re
 from vocab import Vocabulary
-from PIL import Image
-from pycocotools.coco import COCO
+import codecs
+from sentence_transformers import models, SentenceTransformer
 
-class CocoDataset(data.Dataset):
-    """Coco custom dataset class, compatible with Dataloader
-       inspired by pytorch tutorial 03-advanced"""
-    def __init__(self, path, json, vocab=None, transform=None):
+
+
+class TsvDataset(data.Dataset):
+    """TSV custom dataset class, compatible with Dataloader"""
+
+    def __init__(self, file_name, field_num=2):
         """
 
-        :param path: images directory path
-        :param json: annotations file path (annotations contain object instances, object keypoints and image captions)
-                     this is the Common Objects Context (COCO)
-        :param vocab: vocabulary
-        :param transform: a torchvision.transforms image transformer for preprocessing
+        :param file_name=path to the tsv file
+        :param field_num=1 for covost_fr_en = field_num = fr, field_num = en
         """
-        self.path = path
-        self.coco = COCO(json) # object of Coco Helper Class
-        self.ids = list(self.coco.anns.keys()) # unique identifiers for annontations
-        self.vocab = vocab
-        self.transform = transform
+        f = codecs.open(file_name, encoding='utf-8')
+        self.field_num = field_num
+        self.lines = f.readlines()
+        self.sentence_labse = SentenceTransformer('/gpfsstore/rech/eie/upp27cx/labse', device='cuda')
+
 
     def __getitem__(self,index):
         """special python method for indexing a dict. dict[index]
@@ -37,31 +31,21 @@ class CocoDataset(data.Dataset):
         return: (image, caption)
         """
 
-        coco = self.coco
-        vocab = self.vocab
-        annotation_id = self.ids[index]
-        caption = coco.anns[annotation_id]['caption']
-        image_id = coco.anns[annotation_id]['image_id']
-        path = coco.loadImgs(image_id)[0]['file_name']
-
-        image = Image.open(os.path.join(self.path, path))
-        image = image.convert('RGB')
-
-        if self.transform != None:
-            # apply image preprocessing
-            image = self.transform(image)
+        line = lines[index]
+        fields = line.split('\t')
+        txt = fields[self.field_num].lower()
 
         # tokenize captions
-        caption_str = str(caption).lower()
-        tokens = nltk.tokenize.word_tokenize(caption_str)
         caption = torch.Tensor([vocab(vocab.start_token())] +
-                               [vocab(token) for token in tokens] +
+                               [vocab(char) for char in txt] +
                                [vocab(vocab.end_token())])
 
-        return image, caption
+        labSE = self.sentence_labse.encode(txt)
+
+        return labSE, caption
 
     def __len__(self):
-        return len(self.ids)
+        return len(self.lines)
 
 def collate_fn(data):
     """Create mini-batches of (image, caption)
@@ -97,63 +81,9 @@ def collate_fn(data):
         padded_captions[ix, :end] = caption[:end]
     return images, padded_captions, caption_lengths
 
-def get_coco_data_loader(path, json, vocab, transform=None,
-        batch_size=32, shuffle=True, num_workers=2):
-    """Returns custom COCO Dataloader"""
-
-    coco = CocoDataset(path=path,
-                       json=json,
-                       vocab=vocab,
-                       transform=transform)
-
-    data_loader = torch.utils.data.DataLoader(dataset=coco,
-                                              batch_size=batch_size,
-                                              shuffle=shuffle,
-                                              num_workers=num_workers,
-                                              collate_fn=collate_fn)
-
-    return data_loader
 
 
-class ImagesDataset(data.Dataset):
-    """
-    """
-    def __init__(self, dir_path, transform=None):
-        """
-        :param dir_path:
-        :param transform:
-        :returns:
-        """
-        self.dir_path = dir_path
-        self.transform = transform
-
-        _a, _b, files = next(os.walk(dir_path))
-        self.file_names = files
-
-    def __getitem__(self, idx):
-        """
-        :param idx:
-        :returns:
-        """
-        # load image and caption
-        file_name = self.file_names[idx]
-        image_id = re.findall('[0-9]{12}', file_name)[0]
-        image_path = os.path.join(self.dir_path, file_name)
-        image = Image.open(image_path).convert('RGB')
-
-        # transform image
-        if self.transform is not None:
-            image = self.transform(image)
-
-        return image, image_id
-
-    def __len__(self):
-        """
-        :returns:
-        """
-        return len(self.file_names)
-
-def get_basic_loader(dir_path, transform, batch_size=32, shuffle=True, num_workers=2):
+def get_basic_loader(file_name, field_num, batch_size=32, shuffle=True, num_workers=2):
     """
     Returns torch.utils.data.DataLoader for custom coco dataset.
     :param dir_path:
@@ -165,7 +95,7 @@ def get_basic_loader(dir_path, transform, batch_size=32, shuffle=True, num_worke
     :param num_workers:
     :returns:
     """
-    datas = ImagesDataset(dir_path=dir_path, transform=transform)
+    datas = TsvDataset(file_name, field_num)
 
     # Data loader for COCO dataset
     # This will return (images, captions, lengths) for every iteration.
@@ -173,5 +103,5 @@ def get_basic_loader(dir_path, transform, batch_size=32, shuffle=True, num_worke
     # captions: tensor of shape (batch_size, padded_length).
     # lengths: list indicating valid length for each caption. length is (batch_size).
     data_loader = data.DataLoader(dataset=datas, batch_size=batch_size,
-                                  shuffle=shuffle, num_workers=num_workers)
+                                  shuffle=shuffle, num_workers=num_workers,collate_fn=collate_fn)
     return data_loader

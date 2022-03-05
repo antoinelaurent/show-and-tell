@@ -1,13 +1,11 @@
-import nltk
 import pickle
 import argparse
 import os
 from collections import Counter
-from pycocotools.coco import COCO
-from dataset_coco import PATH_TO_DATA
+import codecs
 
 def path_to_vocab():
-    return os.path.join(PATH_TO_DATA, 'vocab.pkl')
+    return os.path.join('', 'vocab.pkl')
 
 
 class Vocabulary(object):
@@ -27,7 +25,7 @@ class Vocabulary(object):
         if not word in self.word2idx:
             return self.word2idx['<unk>']
         return self.word2idx[word]
-
+        
     def __len__(self):
         return len(self.word2idx)
 
@@ -38,23 +36,13 @@ class Vocabulary(object):
         return '<end>'
 
 
-def build_vocab(json='data/annotations/captions_train2017.json', threshold=4, max_words=15000):
-    """Build a simple vocabulary wrapper."""
-    coco = COCO(json)
+def build_vocab(tsv='covost_v2.fr_en.train.tsv', field_num=2):
+    print("TSV : %s" % tsv)
+
+    f = codecs.open(tsv, encoding='utf-8')
+    field_num = field_num
+    lines = f.readlines()
     counter = Counter()
-    ids = coco.anns.keys()
-    for i, id in enumerate(ids):
-        caption = str(coco.anns[id]['caption'])
-        tokens = nltk.tokenize.word_tokenize(caption.lower())
-        counter.update(tokens)
-
-        if i % 1000 == 0:
-            print("[%d/%d] Tokenized the captions." %(i, len(ids)))
-
-    # 4 special tokens
-    words = counter.most_common(max_words-4)
-    # If the word frequency is less than 'threshold', then the word is discarded.
-    words = [word for word, cnt in words if cnt >= threshold]
 
     # Creates a vocab wrapper and add some special tokens.
     vocab = Vocabulary()
@@ -64,14 +52,26 @@ def build_vocab(json='data/annotations/captions_train2017.json', threshold=4, ma
     vocab.add_word('<unk>')
 
     # Adds the words to the vocabulary.
+    for line in lines:
+        txt = line.lower().split('\t')[field_num]
+        for char in txt:
+            counter.update(char)
+
+    words = counter.most_common(70)
+    # If the word frequency is less than 'threshold', then the word is discarded.
+    words = [word for word, cnt in words if cnt >= 10]
+
     for i, word in enumerate(words):
         vocab.add_word(word)
-    print('Total number of words in vocab:', len(words))
+    
+
+    print('Total number of words in vocab:', len(vocab))
+
     return vocab
 
-def dump_vocab(path=path_to_vocab()):
+def dump_vocab(path=path_to_vocab(), tsv='covost_v2.fr_en.train.tsv', field_num=2):
     if not os.path.exists(path):
-        vocab = build_vocab()
+        vocab = build_vocab(tsv, field_num)
         with open(path, 'wb') as f:
             pickle.dump(vocab, f)
         print("Total vocabulary size: %d" %len(vocab))
@@ -88,19 +88,17 @@ def load_vocab(path=path_to_vocab()):
 
 
 def main(args):
-    vocab = build_vocab(json=args.caption_path,
-                        threshold=args.threshold)
     vocab_path = args.vocab_path
-    dump_vocab(vocab_path)
+    dump_vocab(vocab_path, args.tsv_path, args.field_num)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--caption_path', type=str, 
+    parser.add_argument('--tsv_path', type=str, 
                         help='path for train annotation file')
     parser.add_argument('--vocab_path', type=str, default=path_to_vocab(),
                         help='path for saving vocabulary wrapper')
-    parser.add_argument('--threshold', type=int, default=4, 
+    parser.add_argument('--field_num', type=int, default=2, 
                         help='minimum word count threshold')
     args = parser.parse_args()
     main(args)
