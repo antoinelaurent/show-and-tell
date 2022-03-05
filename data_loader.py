@@ -83,7 +83,7 @@ def collate_fn(data):
 
 
 
-def get_basic_loader(file_name, field_num, batch_size=32, shuffle=True, num_workers=2):
+def get_basic_loader(file_name, field_num, vocab, batch_size=32, shuffle=True, num_workers=2):
     """
     Returns torch.utils.data.DataLoader for custom coco dataset.
     :param dir_path:
