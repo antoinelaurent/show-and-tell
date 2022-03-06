@@ -129,9 +129,9 @@ if __name__ == '__main__':
     train_loader = get_basic_loader(file_name=TSV_FILEPATH,
                                     field_num=2,
                                     vocab=vocab,
-                                    batch_size=batch_size,
+                                    batch_size=32,
                                     shuffle=True,
-                                    num_workers=num_workers)
+                                    num_workers=1)
 
     for step, (features, captions, lengths) in enumerate(train_loader, start=0):
         ipdb.set_trace()
