@@ -5,6 +5,9 @@ from vocab import Vocabulary
 import codecs
 from sentence_transformers import models, SentenceTransformer
 
+from vocab import Vocabulary, load_vocab
+
+
 import ipdb
 
 
