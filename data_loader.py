@@ -14,7 +14,7 @@ import ipdb
 class TsvDataset(data.Dataset):
     """TSV custom dataset class, compatible with Dataloader"""
 
-    def __init__(self, file_name, vocab, field_num=2):
+    def __init__(self, file_name, field_num, vocab):
         """
 
         :param file_name=path to the tsv file
