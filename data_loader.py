@@ -38,7 +38,7 @@ class TsvDataset(data.Dataset):
         line = self.lines[index]
         fields = line.split('\t')
         print(fields)
-        
+
         txt = fields[self.field_num].lower()
         vocab = self.vocab
 
@@ -112,3 +112,23 @@ def get_basic_loader(file_name, field_num, vocab, batch_size=32, shuffle=True, n
     data_loader = data.DataLoader(dataset=datas, batch_size=batch_size,
                                   shuffle=shuffle, num_workers=num_workers,collate_fn=collate_fn)
     return data_loader
+
+
+
+if __name__ == '__main__':
+    import argparse
+
+    TSV_FILEPATH = 'covost_v2.fr_en.train.tsv'
+
+    vocab = load_vocab()
+
+
+    train_loader = get_basic_loader(file_name=TSV_FILEPATH,
+                                    field_num=2,
+                                    vocab=vocab,
+                                    batch_size=batch_size,
+                                    shuffle=True,
+                                    num_workers=num_workers)
+
+    for step, (features, captions, lengths) in enumerate(train_loader, start=0):
+        ipdb.set_trace()
