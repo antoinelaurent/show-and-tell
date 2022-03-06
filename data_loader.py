@@ -131,7 +131,7 @@ if __name__ == '__main__':
                                     vocab=vocab,
                                     batch_size=32,
                                     shuffle=True,
-                                    num_workers=1)
+                                    num_workers=0)
 
     for step, (features, captions, lengths) in enumerate(train_loader, start=0):
         ipdb.set_trace()
