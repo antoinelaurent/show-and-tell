@@ -114,6 +114,7 @@ def main(args):
                     output = outputs.cpu().data.numpy()[0]
                     true_id = captions.cpu().data.numpy()[0]
                     
+                    ipdb.set_trace()
                     sentence = utils.convert_back_to_text(output, vocab)
                     print('Sample train :', sentence)
                     sentence = utils.convert_back_to_text(true_id, vocab)
