@@ -54,7 +54,7 @@ def main(args):
     embed_size = args.embed_size
     num_hiddens = args.num_hidden
     learning_rate = 1e-3
-    num_epochs = 3
+    num_epochs = 30
     log_step = args.log_step
     save_step = 500
     checkpoint_dir = args.checkpoint_dir
