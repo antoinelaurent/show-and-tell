@@ -112,7 +112,7 @@ def main(args):
                     outputs = decoder(features, captions, lengths)
 
                 train_loss = criterion(outputs, targets)
-                losses_train.append(train_loss.data[0])
+                losses_train.append(train_loss.data)
                 train_loss.backward()
                 optimizer.step()
 
@@ -130,7 +130,7 @@ def main(args):
                         #features = encoder(images)
                         outputs = decoder(features, captions, lengths)
                         val_loss = criterion(outputs, targets)
-                        batch_loss_val.append(val_loss.data[0])
+                        batch_loss_val.append(val_loss.data)
 
                     losses_val.append(np.mean(batch_loss_val))
 

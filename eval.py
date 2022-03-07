@@ -19,15 +19,11 @@ def main(args):
     num_workers = 2
 
     # Image Preprocessing
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
-        ])
+
 
     vocab = load_vocab()
 
+    
     loader = get_basic_loader(dir_path=os.path.join(args.image_path),
                               transform=transform,
                               batch_size=batch_size,
@@ -40,24 +36,20 @@ def main(args):
     num_hiddens = args.num_hidden
     checkpoint_path = 'checkpoints'
 
-    encoder = CNN(embed_size)
     decoder = RNN(embed_size, num_hiddens, len(vocab), 1, rec_unit=args.rec_unit)
 
-    encoder_state_dict, decoder_state_dict, optimizer, *meta = utils.load_models(args.checkpoint_file)
-    encoder.load_state_dict(encoder_state_dict)
+    decoder_state_dict, optimizer, *meta = utils.load_models(args.checkpoint_file)
+
     decoder.load_state_dict(decoder_state_dict)
 
     if torch.cuda.is_available():
-        encoder.cuda()
         decoder.cuda()
 
     # Train the Models
     try:
         results = []
-        for step, (images, image_ids) in enumerate(loader):
-            images = utils.to_var(images, volatile=True)
-
-            features = encoder(images)
+        for step, (features, image_ids) in enumerate(loader):
+            features = utils.to_var(features, volatile=True)
             captions = decoder.sample(features)
             captions = captions.cpu().data.numpy()
             captions = [utils.convert_back_to_text(cap, vocab) for cap in captions]
