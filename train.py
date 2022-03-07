@@ -93,6 +93,7 @@ def main(args):
 
                 # Set mini-batch dataset
                # images = utils.to_var(images, volatile=True)
+                features = utils.to_var(features)
                 captions = utils.to_var(captions)
                 targets = pack_padded_sequence(captions, lengths, batch_first=True)[0]
                 

@@ -90,7 +90,7 @@ def sample(decoder, vocab, val_loader):
     
     features, captions, lengths = next(iter(val_loader))
     captions = to_var(captions, volatile=True)
-
+    features = to_var(features, volatile=True)
     targets = nn.utils.rnn.pack_padded_sequence(captions, lengths, batch_first=True)[0]
     #features = encoder(to_var(images, volatile=True))
 
