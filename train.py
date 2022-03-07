@@ -100,7 +100,7 @@ def main(args):
                 # Forward, Backward and Optimize
                 decoder.zero_grad()
                 #encoder.zero_grad()
-                
+
                 if ngpu > 1:
                     # run on multiple GPU
                     #features = nn.parallel.data_parallel(encoder, images, range(ngpu))
@@ -131,7 +131,7 @@ def main(args):
                         val_loss = criterion(outputs, targets)
                         batch_loss_val.append(val_loss.data)
 
-                    losses_val.append(np.mean(batch_loss_val))
+                    losses_val.append(np.mean(batch_loss_val.cpu()))
 
                     # predict
                     sampled_ids = decoder.sample(features)
