@@ -131,7 +131,7 @@ def main(args):
                         val_loss = criterion(outputs, targets)
                         batch_loss_val.append(val_loss.data)
 
-                    losses_val.append(np.mean(batch_loss_val.cpu()))
+                    losses_val.append(np.mean(batch_loss_val.detach().cpu().numpy()))
 
                     # predict
                     sampled_ids = decoder.sample(features)
