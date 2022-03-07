@@ -124,6 +124,7 @@ def main(args):
                     for val_step, (features, captions, lengths) in enumerate(val_loader):
                         #images = utils.to_var(images, volatile=True)
                         captions = utils.to_var(captions, volatile=True)
+                        features = utils.to_var(features, volatile=True)
 
                         targets = pack_padded_sequence(captions, lengths, batch_first=True)[0]
                         #features = encoder(images)
