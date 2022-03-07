@@ -129,9 +129,9 @@ def main(args):
                         #features = encoder(images)
                         outputs = decoder(features, captions, lengths)
                         val_loss = criterion(outputs, targets)
-                        batch_loss_val.append(val_loss.data)
+                        batch_loss_val.append(val_loss.detach().cpu().numpy())
 
-                    losses_val.append(np.mean(batch_loss_val.detach().cpu().numpy()))
+                    losses_val.append(np.mean(batch_loss_val))
 
                     # predict
                     sampled_ids = decoder.sample(features)
