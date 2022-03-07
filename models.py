@@ -80,7 +80,7 @@ class RNN(torch.nn.Module):
         outputs = self.linear(hiddens[0])
         return outputs
 
-    def sample(self, features, max_len=25):
+    def sample(self, features, max_len=500):
         """
         Sample from Recurrent network using greedy decoding
 

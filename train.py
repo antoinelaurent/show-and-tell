@@ -111,13 +111,13 @@ def main(args):
                     outputs = decoder(features, captions, lengths)
 
                 if step % log_step == 0:
-                    output = outputs.cpu().data.numpy()[0]
-                    true_id = captions.cpu().data.numpy()[0]
-                    
-                    ipdb.set_trace()
-                    sentence = utils.convert_back_to_text(output, vocab)
+                    sampled_ids = decoder.sample(features)
+                    sampled_ids = sampled_ids.cpu().data.numpy()[0]
+                    sentence = utils.convert_back_to_text(sampled_ids, vocab)
                     print('Sample train :', sentence)
-                    sentence = utils.convert_back_to_text(true_id, vocab)
+
+                    true_ids = captions.cpu().data.numpy()[0]
+                    sentence = utils.convert_back_to_text(true_ids, vocab)
                     print('Target train :', sentence)
 
 
