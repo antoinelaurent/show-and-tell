@@ -143,7 +143,7 @@ def main(args):
                     sentence = utils.convert_back_to_text(true_ids, vocab)
                     print('Target:', sentence)
 
-                    print('Epoch: {} - Step: {} - Train Loss: {} - Eval Loss: {}'.format(epoch, step, losses_train[-1], losses_val[-1]))
+                    print('Epoch: {} - Step: {} - Train Loss: {} - Eval Loss: {}'.format(epoch, step, losses_train[-1], losses_val[-1]), flush=True)
                     #encoder.batchnorm.train()
 
                 # Save the models
