@@ -19,7 +19,7 @@ import ipdb
 def main(args):
     # hyperparameters
     batch_size = args.batch_size
-    num_workers = 1
+    num_workers = 0
 
 
     # load COCOs dataset
@@ -48,12 +48,10 @@ def main(args):
     losses_val = []
     losses_train = []
 
-    ipdb.set_trace()
-
     # Build the models
     ngpu = 1
     initial_step = initial_epoch = 0
-    embed_size = 768
+    embed_size = args.embed_size
     num_hiddens = args.num_hidden
     learning_rate = 1e-3
     num_epochs = 3
@@ -118,7 +116,7 @@ def main(args):
 
                 # Run validation set and predict
                 if step % log_step == 0:
-                    encoder.batchnorm.eval()
+                    #encoder.batchnorm.eval()
                     # run validation set
                     batch_loss_val = []
                     for val_step, (features, captions, lengths) in enumerate(val_loader):
@@ -155,7 +153,7 @@ def main(args):
         pass
     finally:
         # Do final save
-        utils.save_models(encoder, decoder, optimizer, step, epoch, losses_train, losses_val, checkpoint_dir)
+        utils.save_models(decoder, optimizer, step, epoch, losses_train, losses_val, checkpoint_dir)
         utils.dump_losses(losses_train, losses_val, os.path.join(checkpoint_dir, 'losses.pkl'))
 
 if __name__ == '__main__':
@@ -176,6 +174,6 @@ if __name__ == '__main__':
     parser.add_argument('--num_hidden', type=int,
             default=512, help='number of hidden units in the RNN')
     parser.add_argument('--embed_size', type=int,
-            default=512, help='number of embeddings in the RNN')
+            default=768, help='number of embeddings in the labSE')
     args = parser.parse_args()
     main(args)
