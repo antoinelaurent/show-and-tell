@@ -22,7 +22,7 @@ class TsvDataset(data.Dataset):
         """
         f = codecs.open(file_name, encoding='utf-8')
         self.field_num = field_num
-        self.lines = f.readlines()
+        self.lines = f.readlines()[1:]
         self.sentence_labse = SentenceTransformer('/gpfsstore/rech/eie/upp27cx/labse', device='cuda')
         self.vocab = vocab
 
@@ -36,11 +36,8 @@ class TsvDataset(data.Dataset):
         return: (image, caption)
         """
 
-        ipdb.set_trace()
-
         line = self.lines[index]
         fields = line.split('\t')
-        print(fields)
 
         txt = fields[self.field_num].lower()
         vocab = self.vocab
@@ -50,7 +47,7 @@ class TsvDataset(data.Dataset):
                                [vocab(char) for char in txt] +
                                [vocab(vocab.end_token())])
 
-        labSE = self.sentence_labse.encode(txt)
+        labSE = torch.tensor(self.sentence_labse.encode(txt))
 
         return labSE, caption
 

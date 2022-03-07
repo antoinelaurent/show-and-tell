@@ -49,11 +49,11 @@ def main(args):
     losses_train = []
 
     ipdb.set_trace()
-    
+
     # Build the models
     ngpu = 1
     initial_step = initial_epoch = 0
-    embed_size = args.embed_size
+    embed_size = 768
     num_hiddens = args.num_hidden
     learning_rate = 1e-3
     num_epochs = 3
