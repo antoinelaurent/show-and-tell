@@ -100,8 +100,7 @@ def main(args):
                 # Forward, Backward and Optimize
                 decoder.zero_grad()
                 #encoder.zero_grad()
-
-                ipdb.set_trace()
+                
                 if ngpu > 1:
                     # run on multiple GPU
                     #features = nn.parallel.data_parallel(encoder, images, range(ngpu))
