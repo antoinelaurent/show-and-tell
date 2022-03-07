@@ -81,7 +81,7 @@ def convert_back_to_text(idx_arr, vocab):
     predicate = lambda word_id: vocab.idx2word[word_id] != vocab.end_token()
     sampled_caption = [vocab.idx2word[word_id] for word_id in takewhile(predicate, idx_arr) if word_id not in blacklist]
 
-    sentence = ' '.join(sampled_caption)
+    sentence = "".join(sampled_caption)
     return sentence
 
 def sample(decoder, vocab, val_loader):

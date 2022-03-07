@@ -110,6 +110,17 @@ def main(args):
                     #features = encoder(images)
                     outputs = decoder(features, captions, lengths)
 
+                if step % log_step == 0:
+                    output = outputs.cpu().data.numpy()[0]
+                    true_id = captions.cpu().data.numpy()[0]
+                    
+                    sentence = utils.convert_back_to_text(output, vocab)
+                    print('Sample train :', sentence)
+                    sentence = utils.convert_back_to_text(true_id, vocab)
+                    print('Target train :', sentence)
+
+
+
                 train_loss = criterion(outputs, targets)
                 losses_train.append(train_loss.data)
                 train_loss.backward()
